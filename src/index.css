@@ -1,0 +1,116 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /* ---- Color tokens ---- */
+  --color-ink: #0f1b2d;         /* primary dark / headings on light */
+  --color-ink-2: #16233a;
+  --color-slate: #1d2e4a;       /* secondary dark surfaces */
+  --color-porcelain: #f6f7fa;   /* app background */
+  --color-paper: #ffffff;
+
+  --color-signal: #ff5a1f;      /* primary CTA - safety orange */
+  --color-signal-dark: #e0470f;
+  --color-signal-light: #ffe4d6;
+
+  --color-volt: #0fae82;        /* verified / success teal-green */
+  --color-volt-dark: #0b8f6a;
+  --color-volt-light: #d9f5ec;
+
+  --color-amber: #f5a524;       /* pending / warning */
+  --color-amber-light: #fdf0da;
+
+  --color-line: #e2e6ed;
+  --color-muted: #5b677a;
+  --color-muted-2: #8993a4;
+
+  /* ---- Typography ---- */
+  --font-display: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* ---- Radius ---- */
+  --radius-card: 1rem;
+  --radius-pill: 999px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-porcelain);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono-tag {
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background-color: var(--color-signal);
+  color: white;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cfd6e0; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #b7c0cd; }
+
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Signature pulse-line motif */
+.pulse-dot {
+  position: relative;
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pulse-dot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-ring 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.8); opacity: 0; }
+}
+
+.trace-line {
+  background-image: linear-gradient(to right, var(--color-line) 50%, transparent 50%);
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+}
+
+.trace-line-v {
+  background-image: linear-gradient(to bottom, var(--color-line) 50%, transparent 50%);
+  background-size: 1px 8px;
+  background-repeat: repeat-y;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
