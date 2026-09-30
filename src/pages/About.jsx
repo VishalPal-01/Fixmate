@@ -14,10 +14,10 @@ const VALUES = [
 ]
 
 const TEAM = [
-  { name: 'Arjun Malhotra', role: 'Co-Founder & CEO', avatar: 'https://i.pravatar.cc/200?img=33' },
-  { name: 'Divya Nair', role: 'Co-Founder & COO', avatar: 'https://i.pravatar.cc/200?img=48' },
-  { name: 'Rahul Verma', role: 'Head of Engineering', avatar: 'https://i.pravatar.cc/200?img=11' },
-  { name: 'Simran Kaur', role: 'Head of Operations', avatar: 'https://i.pravatar.cc/200?img=26' },
+  { name: 'Arjun Malhotra', role: 'Co-Founder & CEO', avatar: 'https://ui-avatars.com/api/?name=Arjun+Malhotra&background=1a1a2e&color=fff&size=200' },
+  { name: 'Divya Nair', role: 'Co-Founder & COO', avatar: 'https://ui-avatars.com/api/?name=Divya+Nair&background=2C6EEA&color=fff&size=200' },
+  { name: 'Rahul Verma', role: 'Head of Engineering', avatar: 'https://ui-avatars.com/api/?name=Rahul+Verma&background=0FAE82&color=fff&size=200' },
+  { name: 'Simran Kaur', role: 'Head of Operations', avatar: 'https://ui-avatars.com/api/?name=Simran+Kaur&background=F5A524&color=fff&size=200' },
 ]
 
 export default function About() {

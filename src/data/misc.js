@@ -1,37 +1,5 @@
-export const testimonials = [
-  {
-    id: 't1',
-    name: 'Ananya Rao',
-    avatar: 'https://i.pravatar.cc/150?img=5',
-    role: 'Homeowner, Vasai West',
-    quote: 'I booked a plumber at 11pm for a burst pipe and someone verified was at my door in 20 minutes. FixMate has genuinely replaced my building WhatsApp group for repairs.',
-    rating: 5,
-  },
-  {
-    id: 't2',
-    name: 'Karan Mehta',
-    avatar: 'https://i.pravatar.cc/150?img=8',
-    role: 'Working Professional',
-    quote: 'The live tracking is what sold me. I could see exactly when the electrician was arriving instead of the usual "on the way" guessing game.',
-    rating: 5,
-  },
-  {
-    id: 't3',
-    name: 'Sneha Kapoor',
-    avatar: 'https://i.pravatar.cc/150?img=16',
-    role: 'Homemaker',
-    quote: 'Upfront pricing before booking means no surprise bills. Every technician so far has matched the estimate exactly.',
-    rating: 5,
-  },
-  {
-    id: 't4',
-    name: 'Rohit Bansal',
-    avatar: 'https://i.pravatar.cc/150?img=15',
-    role: 'Property Manager',
-    quote: 'I manage 14 units and use FixMate to dispatch maintenance requests across all of them. Saves me hours every week.',
-    rating: 4,
-  },
-]
+// All fake and mock testimonials have been purged. Real customer reviews are loaded via Supabase.
+export const testimonials = []
 
 export const platformStats = [
   { label: 'Verified professionals', value: '8,200+' },

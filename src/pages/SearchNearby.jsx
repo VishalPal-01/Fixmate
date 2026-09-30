@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Search, MapPin, SlidersHorizontal, ShieldCheck, X, Frown } from 'lucide-react'
@@ -8,7 +8,7 @@ import Badge from '@/components/ui/Badge'
 import EmptyState from '@/components/ui/EmptyState'
 import TechnicianCard from '@/components/sections/TechnicianCard'
 import { categories } from '@/data/categories'
-import { technicians } from '@/data/technicians'
+import { fetchAllTechnicians } from '@/lib/techniciansApi'
 import { cn } from '@/lib/utils'
 
 const SORT_OPTIONS = [
@@ -26,6 +26,18 @@ export default function SearchNearby() {
   const [verifiedOnly, setVerifiedOnly] = useState(false)
   const [sortBy, setSortBy] = useState('recommended')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [technicians, setTechnicians] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadPros() {
+      setLoading(true)
+      const data = await fetchAllTechnicians()
+      setTechnicians(data)
+      setLoading(false)
+    }
+    loadPros()
+  }, [])
 
   const results = useMemo(() => {
     let list = [...technicians]
@@ -37,14 +49,14 @@ export default function SearchNearby() {
         (t) =>
           t.name.toLowerCase().includes(q) ||
           t.title.toLowerCase().includes(q) ||
-          t.skills.some((s) => s.toLowerCase().includes(q))
+          (t.skills || []).some((s) => s.toLowerCase().includes(q))
       )
     }
     if (sortBy === 'rating') list.sort((a, b) => b.rating - a.rating)
     if (sortBy === 'distance') list.sort((a, b) => a.distanceKm - b.distanceKm)
     if (sortBy === 'price') list.sort((a, b) => a.priceStart - b.priceStart)
     return list
-  }, [activeCategory, verifiedOnly, query, sortBy])
+  }, [technicians, activeCategory, verifiedOnly, query, sortBy])
 
   const handleCategoryClick = (id) => {
     setActiveCategory(id)
@@ -118,7 +130,7 @@ export default function SearchNearby() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="font-display text-xl font-bold text-ink">
-              {results.length} professionals near {location.split(',')[0]}
+              {loading ? 'Searching...' : `${results.length} professionals near ${location.split(',')[0]}`}
             </h1>
             <p className="text-sm text-muted mt-0.5">Showing verified and community-rated pros</p>
           </div>
@@ -169,7 +181,13 @@ export default function SearchNearby() {
           )}
 
           <div>
-            {results.length > 0 ? (
+            {loading ? (
+              <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div key={i} className="h-64 rounded-2xl bg-white border border-line animate-pulse" />
+                ))}
+              </div>
+            ) : results.length > 0 ? (
               <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {results.map((tech, i) => (
                   <TechnicianCard tech={tech} key={tech.id} index={i} />

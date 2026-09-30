@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import {
   LayoutDashboard, ClipboardList, Star, Inbox, UserCog, MessageSquare,
 } from 'lucide-react'
@@ -66,16 +66,16 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
-            {/* Customer portal */}
-            <Route element={<DashboardLayout navItems={CUSTOMER_NAV} title="Customer Dashboard" />}>
+            {/* Customer portal — only for role=customer */}
+            <Route element={<DashboardLayout navItems={CUSTOMER_NAV} title="Customer Dashboard" requiredRole="customer" />}>
               <Route path="/dashboard" element={<CustomerDashboard />} />
               <Route path="/bookings" element={<MyBookings />} />
               <Route path="/bookings/:id" element={<BookingTracking />} />
               <Route path="/reviews" element={<ReviewsRatings />} />
             </Route>
 
-            {/* Provider portal */}
-            <Route element={<DashboardLayout navItems={PROVIDER_NAV} title="Provider Dashboard" />}>
+            {/* Provider portal — only for role=provider */}
+            <Route element={<DashboardLayout navItems={PROVIDER_NAV} title="Provider Dashboard" requiredRole="provider" />}>
               <Route path="/provider/dashboard" element={<ProviderDashboard />} />
               <Route path="/provider/requests" element={<ManageRequests />} />
               <Route path="/provider/profile" element={<EditTechnicianProfile />} />

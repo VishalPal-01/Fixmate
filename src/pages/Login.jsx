@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Wrench, ShieldCheck, Star } from 'lucide-react'
 import Logo from '@/components/ui/Logo'
@@ -9,7 +9,6 @@ import { useAuth } from '@/context/AuthContext'
 import { useToast } from '@/context/ToastContext'
 
 export default function Login() {
-  const [role, setRole] = useState('customer')
   const [showPassword, setShowPassword] = useState(false)
   const [form, setForm] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState({})
@@ -17,8 +16,9 @@ export default function Login() {
   const { login } = useAuth()
   const { showToast } = useToast()
   const navigate = useNavigate()
+  const location = useLocation()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const nextErrors = {}
     if (!form.email) nextErrors.email = 'Email is required'
@@ -27,12 +27,29 @@ export default function Login() {
     if (Object.keys(nextErrors).length) return
 
     setLoading(true)
-    setTimeout(() => {
-      login(role)
+    try {
+      await login({ email: form.email, password: form.password })
+
+      // Wait briefly for profile to load
+      await new Promise((r) => setTimeout(r, 400))
+
+      showToast('Welcome back!', 'success')
+
+      // Redirect to where they came from, or dashboard
+      const from = location.state?.from
+      if (from) {
+        navigate(from, { replace: true })
+      } else {
+        // We'll redirect to a neutral route; DashboardLayout handles role-based redirect
+        navigate('/dashboard', { replace: true })
+      }
+    } catch (err) {
+      const msg = err.message || 'Login failed. Please check your credentials.'
+      showToast(msg, 'error')
+      setErrors({ password: msg })
+    } finally {
       setLoading(false)
-      showToast(`Welcome back! Logged in as ${role}.`, 'success')
-      navigate(role === 'provider' ? '/provider/dashboard' : '/dashboard')
-    }, 700)
+    }
   }
 
   return (
@@ -50,20 +67,6 @@ export default function Login() {
         >
           <h1 className="font-display text-3xl font-bold text-ink">Welcome back</h1>
           <p className="mt-2 text-sm text-muted">Log in to manage your bookings and requests.</p>
-
-          <div className="mt-7 grid grid-cols-2 gap-2 bg-porcelain rounded-xl p-1">
-            {['customer', 'provider'].map((r) => (
-              <button
-                key={r}
-                onClick={() => setRole(r)}
-                className={`py-2.5 rounded-lg text-sm font-semibold capitalize transition-all ${
-                  role === r ? 'bg-white text-ink shadow-sm' : 'text-muted'
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4" noValidate>
             <Input
@@ -103,7 +106,7 @@ export default function Login() {
             </div>
 
             <Button type="submit" className="w-full" size="lg" loading={loading}>
-              Log in as {role} <ArrowRight size={17} />
+              Log in <ArrowRight size={17} />
             </Button>
           </form>
 

@@ -44,7 +44,7 @@ export default function TechnicianCard({ tech, index = 0 }) {
               {category.name}
             </Badge>
           )}
-          {tech.badges.slice(0, 1).map((b) => (
+          {(tech.badges || []).slice(0, 1).map((b) => (
             <Badge key={b} variant="volt">
               {b}
             </Badge>

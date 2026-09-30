@@ -27,13 +27,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     setMenuOpen(false)
     navigate('/')
   }
 
   const dashboardPath = user?.role === 'provider' ? '/provider/dashboard' : '/dashboard'
+
 
   return (
     <header

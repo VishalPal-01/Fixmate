@@ -22,7 +22,7 @@ export default function Register() {
 
   const update = (key) => (e) => setForm({ ...form, [key]: e.target.value })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     const nextErrors = {}
     if (!form.name) nextErrors.name = 'Full name is required'
@@ -33,12 +33,30 @@ export default function Register() {
     if (Object.keys(nextErrors).length) return
 
     setLoading(true)
-    setTimeout(() => {
-      register(role, { name: form.name, email: form.email, phone: form.phone, category: form.category })
-      setLoading(false)
+    try {
+      await register({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        password: form.password,
+        role,
+        category: role === 'provider' ? form.category : null,
+      })
       showToast('Account created! Welcome to FixMate.', 'success')
       navigate(role === 'provider' ? '/provider/dashboard' : '/dashboard')
-    }, 800)
+    } catch (err) {
+      const msg = err.message || 'Registration failed. Please try again.'
+      showToast(msg, 'error')
+      if (msg.toLowerCase().includes('email')) {
+        setErrors({ email: msg })
+      } else if (msg.toLowerCase().includes('password')) {
+        setErrors({ password: msg })
+      } else {
+        setErrors({ email: msg })
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -71,7 +89,7 @@ export default function Register() {
           >
             <Users size={22} className={role === 'customer' ? 'text-signal' : 'text-muted-2'} />
             <span className="text-sm font-bold text-ink">I need a service</span>
-            <span className="text-xs text-muted">Book repairs & track jobs</span>
+            <span className="text-xs text-muted">Book repairs &amp; track jobs</span>
           </button>
           <button
             type="button"
@@ -91,7 +109,7 @@ export default function Register() {
           <Input
             label="Full name"
             icon={User}
-            placeholder="Meera Kulkarni"
+            placeholder="Your full name"
             value={form.name}
             onChange={update('name')}
             error={errors.name}

@@ -5,27 +5,41 @@ import Container from '@/components/ui/Container'
 import { Input, Textarea, Select } from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import { supportTopics } from '@/data/misc'
+import { sendContactMessageEmail } from '@/lib/emailService'
+import { useToast } from '@/context/ToastContext'
 
 const CONTACT_METHODS = [
-  { icon: Phone, title: 'Call us', value: '1800-266-3529', note: 'Mon-Sun, 7am - 11pm' },
-  { icon: Mail, title: 'Email us', value: 'support@fixmate.app', note: 'Replies within 24 hours' },
-  { icon: MessageCircle, title: 'Live chat', value: 'Chat with support', note: 'Available in-app' },
+  { icon: Phone, title: 'Call us', value: '1800-266-3529', href: 'tel:18002663529', note: 'Mon-Sun, 7am - 11pm' },
+  { icon: Mail, title: 'Email us', value: 'support@fixmate.app', href: 'mailto:support@fixmate.app', note: 'Replies within 24 hours' },
+  { icon: MessageCircle, title: 'Live chat', value: 'Chat with support', href: 'https://wa.me/9118002663529', note: 'Available via WhatsApp' },
 ]
 
 export default function Contact() {
+  const { showToast } = useToast()
   const [form, setForm] = useState({ name: '', email: '', topic: supportTopics[0], message: '' })
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   const update = (key) => (e) => setForm({ ...form, [key]: e.target.value })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitting(true)
-    setTimeout(() => {
-      setSubmitting(false)
+    try {
+      await sendContactMessageEmail({
+        name: form.name,
+        email: form.email,
+        topic: form.topic,
+        message: form.message,
+      })
+      showToast('Message sent! Support will reach out to you.', 'success')
       setSubmitted(true)
-    }, 800)
+    } catch (err) {
+      console.error('Contact error:', err)
+      showToast('Could not send message. Please try again.', 'error')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -45,23 +59,24 @@ export default function Contact() {
       <Container className="py-16 sm:py-20">
         <div className="grid lg:grid-cols-3 gap-5 mb-14">
           {CONTACT_METHODS.map((m, i) => (
-            <motion.div
+            <motion.a
               key={m.title}
+              href={m.href}
               initial={{ opacity: 0, y: 14 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.08 }}
-              className="bg-white border border-line rounded-2xl p-6 flex items-start gap-4"
+              className="bg-white border border-line rounded-2xl p-6 flex items-start gap-4 hover:border-ink/20 hover:shadow-md transition-all group block text-left"
             >
-              <div className="w-11 h-11 rounded-xl bg-signal-light flex items-center justify-center shrink-0">
-                <m.icon size={19} className="text-signal" />
+              <div className="w-11 h-11 rounded-xl bg-signal-light flex items-center justify-center shrink-0 group-hover:bg-signal group-hover:text-white transition-colors">
+                <m.icon size={19} className="text-signal group-hover:text-white transition-colors" />
               </div>
               <div>
                 <p className="text-sm font-bold text-ink">{m.title}</p>
-                <p className="text-sm text-ink mt-0.5">{m.value}</p>
+                <p className="text-sm text-ink mt-0.5 group-hover:text-signal transition-colors">{m.value}</p>
                 <p className="text-xs text-muted mt-0.5">{m.note}</p>
               </div>
-            </motion.div>
+            </motion.a>
           ))}
         </div>
 

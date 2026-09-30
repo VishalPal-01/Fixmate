@@ -4,12 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { Search, MapPin, ShieldCheck, ArrowRight, Star } from 'lucide-react'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
-import { categories } from '@/data/categories'
 
 const BOARD_ITEMS = [
-  { name: 'Ramesh K.', role: 'Plumber', status: 'En Route', eta: '8 min', color: '#F5A524', avatar: 'https://i.pravatar.cc/100?img=12' },
-  { name: 'Ayesha P.', role: 'Electrician', status: 'Online', eta: 'Nearby', color: '#0FAE82', avatar: 'https://i.pravatar.cc/100?img=32' },
-  { name: 'Vikram S.', role: 'Mobile Repair', status: 'In Progress', eta: 'On site', color: '#FF5A1F', avatar: 'https://i.pravatar.cc/100?img=14' },
+  { name: 'Ramesh K.', role: 'Plumber', status: 'En Route', eta: '8 min', color: '#F5A524', avatar: 'https://ui-avatars.com/api/?name=Ramesh+K&background=F5A524&color=fff&size=100' },
+  { name: 'Ayesha P.', role: 'Electrician', status: 'Online', eta: 'Nearby', color: '#0FAE82', avatar: 'https://ui-avatars.com/api/?name=Ayesha+P&background=0FAE82&color=fff&size=100' },
+  { name: 'Vikram S.', role: 'Mobile Repair', status: 'In Progress', eta: 'On site', color: '#FF5A1F', avatar: 'https://ui-avatars.com/api/?name=Vikram+S&background=FF5A1F&color=fff&size=100' },
 ]
 
 export default function Hero() {
@@ -112,10 +111,15 @@ export default function Hero() {
                 <Star size={16} className="fill-amber text-amber" /> 4.8 average rating
               </div>
               <div className="flex -space-x-2">
-                {[5, 8, 16, 20].map((n) => (
+                {[
+                  { name: 'M', bg: '2C6EEA' },
+                  { name: 'R', bg: '0FAE82' },
+                  { name: 'A', bg: 'F5A524' },
+                  { name: 'V', bg: 'FF5A1F' },
+                ].map((u, idx) => (
                   <img
-                    key={n}
-                    src={`https://i.pravatar.cc/60?img=${n}`}
+                    key={idx}
+                    src={`https://ui-avatars.com/api/?name=${u.name}&background=${u.bg}&color=fff&size=60`}
                     alt=""
                     className="w-7 h-7 rounded-full border-2 border-white object-cover"
                   />

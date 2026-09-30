@@ -1,14 +1,27 @@
+import { useState, useEffect } from 'react'
 import { useParams, useLocation, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { CheckCircle2, Calendar, MapPin, ArrowRight, Home, ListChecks } from 'lucide-react'
 import Container from '@/components/ui/Container'
 import Button from '@/components/ui/Button'
-import { getTechnicianById } from '@/data/technicians'
+import { fetchTechnicianById } from '@/lib/techniciansApi'
 
 export default function BookingConfirmation() {
   const { bookingId } = useParams()
   const { state } = useLocation()
-  const tech = state?.technicianId ? getTechnicianById(state.technicianId) : null
+  const [tech, setTech] = useState(
+    state?.technicianName
+      ? { name: state.technicianName, avatar: state.technicianAvatar }
+      : null
+  )
+
+  useEffect(() => {
+    if (!tech && state?.technicianId) {
+      fetchTechnicianById(state.technicianId).then((res) => {
+        if (res) setTech(res)
+      })
+    }
+  }, [tech, state?.technicianId])
 
   return (
     <div className="bg-porcelain min-h-screen py-14 flex items-center">
@@ -37,7 +50,7 @@ export default function BookingConfirmation() {
 
           <div className="mt-6 inline-flex items-center gap-2 bg-porcelain border border-line rounded-full px-4 py-2">
             <span className="text-xs text-muted">Booking ID</span>
-            <span className="font-mono-tag text-sm font-bold text-ink">{bookingId}</span>
+            <span className="font-mono-tag text-sm font-bold text-ink">{state?.bookingId || bookingId}</span>
           </div>
 
           {state && (
@@ -51,12 +64,16 @@ export default function BookingConfirmation() {
                   </div>
                 </div>
               )}
-              <div className="flex items-center gap-2.5 text-sm text-ink">
-                <Calendar size={15} className="text-muted-2" /> {state.date} · {state.slot}
-              </div>
-              <div className="flex items-center gap-2.5 text-sm text-ink">
-                <MapPin size={15} className="text-muted-2" /> {state.address}
-              </div>
+              {state.date && (
+                <div className="flex items-center gap-2.5 text-sm text-ink">
+                  <Calendar size={15} className="text-muted-2" /> {state.date} · {state.slot}
+                </div>
+              )}
+              {state.address && (
+                <div className="flex items-center gap-2.5 text-sm text-ink">
+                  <MapPin size={15} className="text-muted-2" /> {state.address}
+                </div>
+              )}
             </div>
           )}
 

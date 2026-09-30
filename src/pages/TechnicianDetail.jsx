@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -10,8 +10,7 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import { RatingStars } from '@/components/ui/Rating'
 import TechnicianCard from '@/components/sections/TechnicianCard'
-import { getTechnicianById, getTechniciansByCategory, technicians } from '@/data/technicians'
-import { getReviewsByTechnician } from '@/data/reviews'
+import { fetchTechnicianById, fetchReviewsForTechnician, fetchAllTechnicians } from '@/lib/techniciansApi'
 import { getCategoryById } from '@/data/categories'
 import { formatDate, cn } from '@/lib/utils'
 
@@ -20,13 +19,45 @@ const TABS = ['Overview', 'Reviews', 'Gallery']
 export default function TechnicianDetail() {
   const { id } = useParams()
   const [tab, setTab] = useState('Overview')
-  const tech = getTechnicianById(id)
+  const [tech, setTech] = useState(null)
+  const [reviews, setReviews] = useState([])
+  const [related, setRelated] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function loadData() {
+      setLoading(true)
+      const technicianData = await fetchTechnicianById(id)
+      setTech(technicianData)
+
+      if (technicianData) {
+        const [reviewList, allPros] = await Promise.all([
+          fetchReviewsForTechnician(technicianData.id, technicianData.userId),
+          fetchAllTechnicians(),
+        ])
+        setReviews(reviewList)
+        setRelated(
+          allPros
+            .filter((t) => t.category === technicianData.category && t.id !== technicianData.id)
+            .slice(0, 3)
+        )
+      }
+      setLoading(false)
+    }
+    loadData()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="bg-porcelain min-h-screen py-16 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-ink/20 border-t-ink animate-spin" />
+      </div>
+    )
+  }
 
   if (!tech) return <Navigate to="/404" replace />
 
   const category = getCategoryById(tech.category)
-  const reviews = getReviewsByTechnician(tech.id)
-  const related = getTechniciansByCategory(tech.category).filter((t) => t.id !== tech.id).slice(0, 3)
 
   return (
     <div className="bg-porcelain min-h-screen pb-16">
@@ -63,7 +94,7 @@ export default function TechnicianDetail() {
 
               <div className="flex flex-wrap gap-2 mt-4">
                 {category && <Badge variant="outline" icon={category.icon}>{category.name}</Badge>}
-                {tech.badges.map((b) => (
+                {(tech.badges || []).map((b) => (
                   <Badge key={b} variant="volt" icon={CheckCircle2}>{b}</Badge>
                 ))}
               </div>
@@ -95,13 +126,13 @@ export default function TechnicianDetail() {
               <div className="space-y-8">
                 <div>
                   <h3 className="font-bold text-ink mb-3">About</h3>
-                  <p className="text-sm text-muted leading-relaxed">{tech.bio}</p>
+                  <p className="text-sm text-muted leading-relaxed">{tech.bio || 'Professional technician ready to help with repair and maintenance services.'}</p>
                 </div>
 
                 <div>
                   <h3 className="font-bold text-ink mb-3">Skills & services</h3>
                   <div className="flex flex-wrap gap-2">
-                    {tech.skills.map((s) => (
+                    {(tech.skills || []).map((s) => (
                       <Badge key={s} variant="neutral">{s}</Badge>
                     ))}
                   </div>
@@ -115,12 +146,12 @@ export default function TechnicianDetail() {
                   </div>
                   <div className="bg-white border border-line rounded-2xl p-5">
                     <ThumbsUp size={18} className="text-volt mb-2.5" />
-                    <p className="font-display text-xl font-bold text-ink">{tech.completedJobs.toLocaleString()}</p>
+                    <p className="font-display text-xl font-bold text-ink">{(tech.completedJobs || 0).toLocaleString()}</p>
                     <p className="text-xs text-muted mt-0.5">Jobs completed</p>
                   </div>
                   <div className="bg-white border border-line rounded-2xl p-5">
                     <Languages size={18} className="text-amber mb-2.5" />
-                    <p className="font-display text-sm font-bold text-ink leading-snug">{tech.languages.join(', ')}</p>
+                    <p className="font-display text-sm font-bold text-ink leading-snug">{(tech.languages || ['English']).join(', ')}</p>
                     <p className="text-xs text-muted mt-0.5">Languages</p>
                   </div>
                 </div>
@@ -150,7 +181,7 @@ export default function TechnicianDetail() {
 
             {tab === 'Gallery' && (
               <div className="grid sm:grid-cols-3 gap-4">
-                {tech.gallery.map((g) => (
+                {(tech.gallery || [1, 2, 3]).map((g) => (
                   <div
                     key={g}
                     className="aspect-square rounded-2xl bg-gradient-to-br from-ink to-slate flex items-center justify-center"
@@ -175,10 +206,26 @@ export default function TechnicianDetail() {
             Book this pro <ArrowRight size={17} />
           </Button>
           <div className="grid grid-cols-2 gap-3 mt-3">
-            <Button variant="outline" className="w-full">
+            <Button
+              as="a"
+              href={
+                tech.phone
+                  ? `https://wa.me/${tech.phone.replace(/[^0-9]/g, '')}`
+                  : 'https://wa.me/9118002663529'
+              }
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="outline"
+              className="w-full"
+            >
               <MessageCircle size={16} /> Message
             </Button>
-            <Button variant="outline" className="w-full">
+            <Button
+              as="a"
+              href={tech.phone ? `tel:${tech.phone}` : 'tel:18002663529'}
+              variant="outline"
+              className="w-full"
+            >
               <Phone size={16} /> Call
             </Button>
           </div>

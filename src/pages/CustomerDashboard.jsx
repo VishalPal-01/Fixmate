@@ -1,26 +1,48 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  Search, Wrench, Clock, CheckCircle2, ArrowRight, MapPin, Star, Plus,
+  Search, Wrench, Clock, CheckCircle2, ArrowRight, Star, Plus,
 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import StatusPill from '@/components/ui/StatusPill'
 import { RatingStars } from '@/components/ui/Rating'
 import { useAuth } from '@/context/AuthContext'
-import { bookings } from '@/data/bookings'
-import { getTechnicianById } from '@/data/technicians'
+import { supabase } from '@/lib/supabase'
 import { categories } from '@/data/categories'
 import { formatDateTime } from '@/lib/utils'
 
 export default function CustomerDashboard() {
   const { user } = useAuth()
+  const [bookings, setBookings] = useState([])
+  const [loadingData, setLoadingData] = useState(true)
+
+  useEffect(() => {
+    if (!user?.id) return
+    const fetchBookings = async () => {
+      setLoadingData(true)
+      const { data, error } = await supabase
+        .from('fixmate_bookings')
+        .select('*, fixmate_technician_profiles:technician_id(id, name, avatar_url, title)')
+        .eq('customer_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (!error && data) {
+        setBookings(data)
+      }
+      setLoadingData(false)
+    }
+    fetchBookings()
+  }, [user?.id])
+
   const activeBookings = bookings.filter((b) => !['completed', 'cancelled'].includes(b.status))
   const recentCompleted = bookings.filter((b) => b.status === 'completed').slice(0, 3)
+  const uniqueProviders = new Set(bookings.map((b) => b.provider_id)).size
 
   const stats = [
     { label: 'Active bookings', value: activeBookings.length, icon: Clock, color: '#F5A524' },
     { label: 'Completed jobs', value: bookings.filter((b) => b.status === 'completed').length, icon: CheckCircle2, color: '#0FAE82' },
-    { label: 'Pros contacted', value: new Set(bookings.map((b) => b.technicianId)).size, icon: Wrench, color: '#FF5A1F' },
+    { label: 'Pros contacted', value: uniqueProviders, icon: Wrench, color: '#FF5A1F' },
   ]
 
   return (
@@ -62,7 +84,7 @@ export default function CustomerDashboard() {
               <s.icon size={20} style={{ color: s.color }} />
             </div>
             <div>
-              <p className="font-display text-2xl font-bold text-ink">{s.value}</p>
+              <p className="font-display text-2xl font-bold text-ink">{loadingData ? '—' : s.value}</p>
               <p className="text-xs text-muted">{s.label}</p>
             </div>
           </motion.div>
@@ -78,22 +100,33 @@ export default function CustomerDashboard() {
             </Link>
           </div>
 
-          {activeBookings.length === 0 ? (
-            <p className="text-sm text-muted py-8 text-center">No active bookings right now.</p>
+          {loadingData ? (
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <div key={i} className="h-16 rounded-xl bg-porcelain animate-pulse" />
+              ))}
+            </div>
+          ) : activeBookings.length === 0 ? (
+            <div className="py-8 text-center">
+              <p className="text-sm text-muted">No active bookings right now.</p>
+              <Link to="/search" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-signal">
+                <Plus size={13} /> Book a service
+              </Link>
+            </div>
           ) : (
             <div className="space-y-3">
               {activeBookings.map((b) => {
-                const tech = getTechnicianById(b.technicianId)
+                const tech = b.fixmate_technician_profiles || b.technician_profiles
                 return (
                   <Link
                     key={b.id}
                     to={`/bookings/${b.id}`}
                     className="flex items-center gap-3.5 p-3.5 rounded-xl border border-line hover:border-ink/20 hover:bg-porcelain/60 transition-colors"
                   >
-                    <img src={tech?.avatar} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0" />
+                    <img src={tech?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tech?.name || 'T')}&background=1a1a2e&color=fff&size=80`} alt="" className="w-11 h-11 rounded-lg object-cover shrink-0" />
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold text-ink truncate">{b.service}</p>
-                      <p className="text-xs text-muted truncate">{tech?.name} · {formatDateTime(b.scheduledFor)}</p>
+                      <p className="text-xs text-muted truncate">{tech?.name} · {formatDateTime(b.scheduled_for)}</p>
                     </div>
                     <StatusPill status={b.status} className="shrink-0" />
                   </Link>
@@ -126,32 +159,43 @@ export default function CustomerDashboard() {
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-display font-bold text-lg text-ink">Recently completed</h2>
           <Link to="/reviews" className="text-xs font-bold text-signal flex items-center gap-1 hover:underline">
-            Rate & review <ArrowRight size={13} />
+            Rate &amp; review <ArrowRight size={13} />
           </Link>
         </div>
-        <div className="grid sm:grid-cols-3 gap-4">
-          {recentCompleted.map((b) => {
-            const tech = getTechnicianById(b.technicianId)
-            return (
-              <div key={b.id} className="border border-line rounded-xl p-4">
-                <div className="flex items-center gap-2.5">
-                  <img src={tech?.avatar} alt="" className="w-9 h-9 rounded-full object-cover" />
-                  <div className="min-w-0">
-                    <p className="text-sm font-bold text-ink truncate">{tech?.name}</p>
-                    <p className="text-xs text-muted truncate">{b.service}</p>
+
+        {loadingData ? (
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-24 rounded-xl bg-porcelain animate-pulse" />
+            ))}
+          </div>
+        ) : recentCompleted.length === 0 ? (
+          <p className="text-sm text-muted py-4 text-center">Completed jobs will appear here.</p>
+        ) : (
+          <div className="grid sm:grid-cols-3 gap-4">
+            {recentCompleted.map((b) => {
+              const tech = b.fixmate_technician_profiles || b.technician_profiles
+              return (
+                <div key={b.id} className="border border-line rounded-xl p-4">
+                  <div className="flex items-center gap-2.5">
+                    <img src={tech?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(tech?.name || 'T')}&background=1a1a2e&color=fff&size=80`} alt="" className="w-9 h-9 rounded-full object-cover" />
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-ink truncate">{tech?.name}</p>
+                      <p className="text-xs text-muted truncate">{b.service}</p>
+                    </div>
                   </div>
+                  {b.rating_given ? (
+                    <RatingStars value={b.rating_given} size={13} className="mt-3" />
+                  ) : (
+                    <Link to="/reviews" className="mt-3 flex items-center gap-1 text-xs font-bold text-signal">
+                      <Star size={12} /> Leave a review
+                    </Link>
+                  )}
                 </div>
-                {b.rated ? (
-                  <RatingStars value={b.ratingGiven} size={13} className="mt-3" />
-                ) : (
-                  <Link to="/reviews" className="mt-3 flex items-center gap-1 text-xs font-bold text-signal">
-                    <Star size={12} /> Leave a review
-                  </Link>
-                )}
-              </div>
-            )
-          })}
-        </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )

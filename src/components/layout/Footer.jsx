@@ -40,7 +40,9 @@ export default function Footer() {
               {SOCIALS.map((label) => (
                 <a
                   key={label}
-                  href="#"
+                  href={`https://${label === 'X' ? 'x.com' : label === 'in' ? 'linkedin.com' : label === 'ig' ? 'instagram.com' : 'facebook.com'}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={`FixMate on ${label}`}
                   className="w-9 h-9 rounded-full border border-white/15 flex items-center justify-center text-[11px] font-bold text-white/70 hover:text-white hover:border-white/40 transition-colors"
                 >
@@ -85,9 +87,15 @@ export default function Footer() {
 
         <div className="mt-14 pt-6 border-t border-white/10 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-white/50">
-            <span className="flex items-center gap-1.5"><Phone size={13} /> 1800-266-3529</span>
-            <span className="flex items-center gap-1.5"><Mail size={13} /> support@fixmate.app</span>
-            <span className="flex items-center gap-1.5"><MapPin size={13} /> Vasai-Virar, Maharashtra</span>
+            <a href="tel:18002663529" className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <Phone size={13} /> 1800-266-3529
+            </a>
+            <a href="mailto:support@fixmate.app" className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <Mail size={13} /> support@fixmate.app
+            </a>
+            <span className="flex items-center gap-1.5">
+              <MapPin size={13} /> Vasai-Virar, Maharashtra
+            </span>
           </div>
           <p className="text-xs text-white/40">© 2026 FixMate Technologies Pvt. Ltd. All rights reserved.</p>
         </div>
